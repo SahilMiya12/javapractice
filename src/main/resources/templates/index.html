@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Split Tracker</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">💰 ExpenseSplit</div>
+                <ul class="nav-links">
+                    <li><a href="/" class="active">Dashboard</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/groups">Groups</a></li>
+                    <li><a href="/expenses">Expenses</a></li>
+                    <li><a href="/balances">Balances</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <h1 class="section-title">Expense Split Dashboard</h1>
+            
+            <!-- Quick Stats -->
+            <div class="row">
+                <div class="col-4">
+                    <div class="card text-center">
+                        <h3>Total Users</h3>
+                        <p class="balance-amount" th:text="${totalUsers ?: '0'}">0</p>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card text-center">
+                        <h3>Total Groups</h3>
+                        <p class="balance-amount" th:text="${totalGroups ?: '0'}">0</p>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card text-center">
+                        <h3>Total Expenses</h3>
+                        <p class="balance-amount" th:text="${totalExpenses ?: '0'}">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h2 class="card-title">Quick Actions</h2>
+                <div class="row">
+                    <div class="col-6">
+                        <a href="/users" class="btn btn-primary">Manage Users</a>
+                        <a href="/groups" class="btn btn-primary mt-2">Manage Groups</a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/expenses" class="btn btn-success">Manage Expenses</a>
+                        <a href="/balances" class="btn btn-secondary mt-2">View Balances</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Create Forms -->
+            <div class="row">
+                <!-- Quick Add User -->
+                <div class="col-4">
+                    <div class="card">
+                        <h3 class="card-title">Quick Add User</h3>
+                        <form id="quickUserForm">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="quickUserName" placeholder="Name" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" class="form-control" id="quickUserEmail" placeholder="Email" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Add User</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Create Group -->
+                <div class="col-4">
+                    <div class="card">
+                        <h3 class="card-title">Quick Create Group</h3>
+                        <form id="quickGroupForm">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="quickGroupName" placeholder="Group Name" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Create Group</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Add Expense -->
+                <div class="col-4">
+                    <div class="card">
+                        <h3 class="card-title">Quick Add Expense</h3>
+                        <form id="quickExpenseForm">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="quickExpenseDesc" placeholder="Description" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="number" class="form-control" id="quickExpenseAmount" placeholder="Amount" step="0.01" min="0.01" required>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">Add Expense</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <h2 class="card-title">Recent Activity</h2>
+                <div id="recentActivity">
+                    <p>Loading recent activity...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ExpenseSplit Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecentActivity();
+            
+            // Quick Add User Form
+            document.getElementById('quickUserForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                quickAddUser();
+            });
+            
+            // Quick Create Group Form
+            document.getElementById('quickGroupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                quickCreateGroup();
+            });
+            
+            // Quick Add Expense Form
+            document.getElementById('quickExpenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                quickAddExpense();
+            });
+        });
+
+        function quickAddUser() {
+            const name = document.getElementById('quickUserName').value;
+            const email = document.getElementById('quickUserEmail').value;
+            
+            const userData = {
+                name: name,
+                email: email,
+                contactNo: ''
+            };
+
+            fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to add user');
+                }
+                return response.json();
+            })
+            .then(() => {
+                document.getElementById('quickUserForm').reset();
+                alert('User added successfully!');
+                location.reload(); // Reload to update stats
+            })
+            .catch(error => {
+                console.error('Error adding user:', error);
+                alert('Error adding user. Please try again.');
+            });
+        }
+
+        function quickCreateGroup() {
+            const name = document.getElementById('quickGroupName').value;
+            
+            const groupData = {
+                name: name
+            };
+
+            fetch('/api/groups', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(groupData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to create group');
+                }
+                return response.json();
+            })
+            .then(() => {
+                document.getElementById('quickGroupForm').reset();
+                alert('Group created successfully!');
+                location.reload(); // Reload to update stats
+            })
+            .catch(error => {
+                console.error('Error creating group:', error);
+                alert('Error creating group. Please try again.');
+            });
+        }
+
+        function quickAddExpense() {
+            const description = document.getElementById('quickExpenseDesc').value;
+            const amount = document.getElementById('quickExpenseAmount').value;
+            
+            // For quick expense, we'll use first available group and user
+            Promise.all([
+                fetch('/api/groups').then(r => r.json()),
+                fetch('/api/users').then(r => r.json())
+            ])
+            .then(([groups, users]) => {
+                if (groups.length === 0 || users.length === 0) {
+                    alert('Please create at least one group and user first.');
+                    return;
+                }
+                
+                const expenseData = {
+                    groupId: groups[0].groupId,
+                    paidBy: users[0].userId,
+                    amount: parseFloat(amount),
+                    description: description
+                };
+
+                return fetch('/api/expenses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(expenseData)
+                });
+            })
+            .then(response => {
+                if (!response || !response.ok) {
+                    throw new Error('Failed to add expense');
+                }
+                return response.json();
+            })
+            .then(() => {
+                document.getElementById('quickExpenseForm').reset();
+                alert('Expense added successfully!');
+                location.reload(); // Reload to update stats
+            })
+            .catch(error => {
+                console.error('Error adding expense:', error);
+                alert('Error adding expense. Please try again.');
+            });
+        }
+
+        function loadRecentActivity() {
+            Promise.all([
+                fetch('/api/groups').then(r => r.json()),
+                fetch('/api/expenses/group/1').then(r => r.json()).catch(() => [])
+            ])
+            .then(([groups, expenses]) => {
+                const activityDiv = document.getElementById('recentActivity');
+                let html = '';
+                
+                if (expenses && expenses.length > 0) {
+                    html += '<h4>Recent Expenses</h4><ul>';
+                    expenses.slice(0, 5).forEach(expense => {
+                        html += `<li>${expense.description} - $${expense.amount}</li>`;
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p>No recent expenses found.</p>';
+                }
+                
+                if (groups && groups.length > 0) {
+                    html += '<h4>Your Groups</h4><ul>';
+                    groups.slice(0, 3).forEach(group => {
+                        html += `<li>${group.name}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                activityDiv.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading activity:', error);
+                document.getElementById('recentActivity').innerHTML = '<p>Error loading recent activity.</p>';
+            });
+        }
+    </script>
+</body>
+</html>

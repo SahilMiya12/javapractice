@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balances - Expense Split Tracker</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">💰 ExpenseSplit</div>
+                <ul class="nav-links">
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/groups">Groups</a></li>
+                    <li><a href="/expenses">Expenses</a></li>
+                    <li><a href="/balances" class="active">Balances</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="section-title">Group Balances</h1>
+
+            <!-- Group Selection -->
+            <div class="card">
+                <h2 class="card-title">Select Group</h2>
+                <div class="form-group">
+                    <label class="form-label" for="balanceGroupId">Group</label>
+                    <select class="form-control" id="balanceGroupId" name="balanceGroupId">
+                        <option value="">Select Group</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Balances Display -->
+            <div class="card">
+                <h2 class="card-title">Balance Summary</h2>
+                <div id="balancesContainer">
+                    <p>Please select a group to view balances.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ExpenseSplit Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGroupsForBalances();
+            
+            document.getElementById('balanceGroupId').addEventListener('change', function() {
+                loadGroupBalances(this.value);
+            });
+        });
+
+        function loadGroupsForBalances() {
+            fetch('/api/groups')
+                .then(response => response.json())
+                .then(groups => {
+                    const groupSelect = document.getElementById('balanceGroupId');
+                    groupSelect.innerHTML = '<option value="">Select Group</option>';
+                    
+                    groups.forEach(group => {
+                        const option = document.createElement('option');
+                        option.value = group.groupId;
+                        option.textContent = group.name;
+                        groupSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading groups:', error));
+        }
+
+        function loadGroupBalances(groupId) {
+            if (!groupId) {
+                document.getElementById('balancesContainer').innerHTML = '<p>Please select a group to view balances.</p>';
+                return;
+            }
+
+            fetch(`/api/balances/group/${groupId}`)
+                .then(response => response.json())
+                .then(balances => {
+                    const container = document.getElementById('balancesContainer');
+                    
+                    if (balances.length === 0) {
+                        container.innerHTML = '<p>No balances found for this group.</p>';
+                        return;
+                    }
+                    
+                    let html = '<div class="row">';
+                    
+                    balances.forEach(balance => {
+                        const balanceClass = balance.balance > 0 ? 'balance-positive' : 
+                                           balance.balance < 0 ? 'balance-negative' : 'balance-zero';
+                        
+                        html += `
+                            <div class="col-4">
+                                <div class="balance-card ${balanceClass}">
+                                    <h3>${balance.userName}</h3>
+                                    <div class="balance-amount">$${balance.balance.toFixed(2)}</div>
+                                    <p>${balance.balance > 0 ? 'Owes you' : balance.balance < 0 ? 'You owe' : 'Settled up'}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    container.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading balances:', error);
+                    document.getElementById('balancesContainer').innerHTML = '<p>Error loading balances. Please try again.</p>';
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses - Expense Split Tracker</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">💰 ExpenseSplit</div>
+                <ul class="nav-links">
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/groups">Groups</a></li>
+                    <li><a href="/expenses" class="active">Expenses</a></li>
+                    <li><a href="/balances">Balances</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="section-title">Manage Expenses</h1>
+
+            <!-- Create Expense Form -->
+            <div class="card">
+                <h2 class="card-title">Add New Expense</h2>
+                <form id="expenseForm">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="form-label" for="groupId">Group</label>
+                                <select class="form-control" id="groupId" name="groupId" required>
+                                    <option value="">Select Group</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="form-label" for="paidBy">Paid By</label>
+                                <select class="form-control" id="paidBy" name="paidBy" required>
+                                    <option value="">Select User</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="form-label" for="amount">Amount</label>
+                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label class="form-label" for="description">Description</label>
+                                <input type="text" class="form-control" id="description" name="description" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Expense</button>
+                </form>
+            </div>
+
+            <!-- Expenses List -->
+            <div class="card">
+                <h2 class="card-title">All Expenses</h2>
+                <div class="form-group">
+                    <label class="form-label" for="filterGroupId">Filter by Group</label>
+                    <select class="form-control" id="filterGroupId" name="filterGroupId">
+                        <option value="">All Groups</option>
+                    </select>
+                </div>
+                <table class="table" id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Paid By</th>
+                            <th>Group</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expensesTableBody">
+                        <!-- Expenses will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ExpenseSplit Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGroups();
+            loadUsers();
+            loadExpenses();
+            
+            document.getElementById('expenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createExpense();
+            });
+            
+            document.getElementById('filterGroupId').addEventListener('change', function() {
+                loadExpenses(this.value);
+            });
+        });
+
+        function loadGroups() {
+            fetch('/api/groups')
+                .then(response => response.json())
+                .then(groups => {
+                    const groupSelect = document.getElementById('groupId');
+                    const filterGroupSelect = document.getElementById('filterGroupId');
+                    
+                    groupSelect.innerHTML = '<option value="">Select Group</option>';
+                    filterGroupSelect.innerHTML = '<option value="">All Groups</option>';
+                    
+                    groups.forEach(group => {
+                        const option = document.createElement('option');
+                        option.value = group.groupId;
+                        option.textContent = group.name;
+                        groupSelect.appendChild(option.cloneNode(true));
+                        filterGroupSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading groups:', error));
+        }
+
+        function loadUsers() {
+            fetch('/api/users')
+                .then(response => response.json())
+                .then(users => {
+                    const userSelect = document.getElementById('paidBy');
+                    userSelect.innerHTML = '<option value="">Select User</option>';
+                    
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.userId;
+                        option.textContent = `${user.name} (${user.email})`;
+                        userSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading users:', error));
+        }
+
+        function loadExpenses(groupId = '') {
+            let url = '/api/expenses/group/1'; // Default to first group
+            if (groupId) {
+                url = `/api/expenses/group/${groupId}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(expenses => {
+                    const tbody = document.getElementById('expensesTableBody');
+                    tbody.innerHTML = '';
+                    
+                    expenses.forEach(expense => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${expense.expenseId}</td>
+                            <td>${expense.description}</td>
+                            <td>$${expense.amount}</td>
+                            <td>User ID: ${expense.paidBy}</td>
+                            <td>Group ID: ${expense.groupId}</td>
+                            <td>${new Date(expense.expenseDate).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteExpense(${expense.expenseId})">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error loading expenses:', error));
+        }
+
+        function createExpense() {
+            const form = document.getElementById('expenseForm');
+            const formData = new FormData(form);
+            const expenseData = {
+                groupId: parseInt(formData.get('groupId')),
+                paidBy: parseInt(formData.get('paidBy')),
+                amount: parseFloat(formData.get('amount')),
+                description: formData.get('description')
+            };
+
+            fetch('/api/expenses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(expenseData)
+            })
+            .then(response => response.json())
+            .then(() => {
+                form.reset();
+                loadExpenses();
+                alert('Expense created successfully!');
+            })
+            .catch(error => {
+                console.error('Error creating expense:', error);
+                alert('Error creating expense. Please try again.');
+            });
+        }
+
+        function deleteExpense(expenseId) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                fetch(`/api/expenses/${expenseId}`, {
+                    method: 'DELETE'
+                })
+                .then(() => {
+                    loadExpenses();
+                    alert('Expense deleted successfully!');
+                })
+                .catch(error => {
+                    console.error('Error deleting expense:', error);
+                    alert('Error deleting expense. Please try again.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
