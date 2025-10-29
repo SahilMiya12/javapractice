@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - ExpenseSplit</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="professional-auth-body">
+    <div class="professional-auth-container">
+        <!-- Left Section - Branding -->
+        <div class="auth-branding-section">
+            <div class="branding-content">
+                <div class="logo-large">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>ExpenseSplit</span>
+                </div>
+                <h1 class="branding-title">Join Thousands<br>Managing Expenses</h1>
+                <p class="branding-subtitle">Start splitting expenses with your groups today. No more awkward money conversations!</p>
+                
+                <!-- Feature List -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-users"></i>
+                        <span>Create Groups</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Track Expenses</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Balance Settlements</span>
+                    </div>
+                </div>
+                
+                <!-- Existing User Section -->
+                <!-- <div class="new-user-section">
+                    <h3>Already have an account?</h3>
+                    <p>Welcome back! Sign in to access your expenses and groups.</p>
+                    <a th:href="@{/login}" class="professional-btn professional-btn-outline">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In Now
+                    </a>
+                </div> -->
+            </div>
+        </div>
+
+        <!-- Right Section - Register Form -->
+        <div class="auth-form-section">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Create Account</h2>
+                    <p>Join us to start splitting expenses</p>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${error}" class="professional-alert professional-alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <form th:action="@{/register}" method="post" th:object="${user}" class="professional-auth-form">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="name" class="input-label">
+                                <i class="fas fa-user"></i>
+                                Full Name
+                            </label>
+                            <input type="text" id="name" th:field="*{name}" class="professional-input" placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email" class="input-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="email" th:field="*{email}" class="professional-input" placeholder="Enter your email" required>
+                    </div>
+
+                    
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="password" class="input-label">
+                                <i class="fas fa-lock"></i>
+                                Password
+                            </label>
+                            <input type="password" id="password" th:field="*{password}" class="professional-input" placeholder="Create a password" required>
+                            <div class="password-strength" id="passwordStrength"></div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="confirmPassword" class="input-label">
+                                <i class="fas fa-lock"></i>
+                                Confirm Password
+                            </label>
+                            <input type="password" id="confirmPassword" class="professional-input" placeholder="Confirm your password" required>
+                            <div class="password-feedback" id="passwordFeedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="terms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="professional-btn professional-btn-primary" id="submitBtn">
+                        <span class="btn-content">
+                            <i class="fas fa-user-plus"></i>
+                            Create Account
+                        </span>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a th:href="@{/login}" class="auth-link">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password confirmation validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password');
+            const confirmPassword = this;
+            const feedback = document.getElementById('passwordFeedback');
+            
+            // Remove previous classes
+            confirmPassword.classList.remove('password-match', 'password-mismatch');
+            
+            if (confirmPassword.value === '') {
+                feedback.textContent = '';
+                return;
+            }
+            
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.classList.add('password-mismatch');
+                feedback.textContent = 'Passwords do not match';
+                feedback.className = 'password-feedback mismatch';
+            } else {
+                confirmPassword.classList.add('password-match');
+                feedback.textContent = 'Passwords match!';
+                feedback.className = 'password-feedback match';
+            }
+        });
+
+        // Also validate on password field input
+        document.getElementById('password').addEventListener('input', function() {
+            const confirmPassword = document.getElementById('confirmPassword');
+            const feedback = document.getElementById('passwordFeedback');
+            
+            if (confirmPassword.value) {
+                // Remove previous classes
+                confirmPassword.classList.remove('password-match', 'password-mismatch');
+                
+                if (this.value !== confirmPassword.value) {
+                    confirmPassword.classList.add('password-mismatch');
+                    feedback.textContent = 'Passwords do not match';
+                    feedback.className = 'password-feedback mismatch';
+                } else {
+                    confirmPassword.classList.add('password-match');
+                    feedback.textContent = 'Passwords match!';
+                    feedback.className = 'password-feedback match';
+                }
+            }
+            
+            // Check password strength
+            checkPasswordStrength(this.value);
+        });
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            const strengthBar = document.getElementById('passwordStrength');
+            let strength = 0;
+            let feedback = '';
+            
+            if (password.length === 0) {
+                strengthBar.textContent = '';
+                strengthBar.className = 'password-strength';
+                return;
+            }
+            
+            // Length check
+            if (password.length >= 8) strength++;
+            
+            // Lowercase check
+            if (/[a-z]/.test(password)) strength++;
+            
+            // Uppercase check
+            if (/[A-Z]/.test(password)) strength++;
+            
+            // Number check
+            if (/[0-9]/.test(password)) strength++;
+            
+            // Special character check
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            switch(strength) {
+                case 0:
+                case 1:
+                    feedback = 'Very Weak';
+                    strengthBar.className = 'password-strength very-weak';
+                    break;
+                case 2:
+                    feedback = 'Weak';
+                    strengthBar.className = 'password-strength weak';
+                    break;
+                case 3:
+                    feedback = 'Medium';
+                    strengthBar.className = 'password-strength medium';
+                    break;
+                case 4:
+                    feedback = 'Strong';
+                    strengthBar.className = 'password-strength strong';
+                    break;
+                case 5:
+                    feedback = 'Very Strong';
+                    strengthBar.className = 'password-strength very-strong';
+                    break;
+            }
+            
+            strengthBar.textContent = feedback;
+        }
+
+        // Form submission handler
+        document.querySelector('.professional-auth-form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const terms = document.getElementById('terms');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnContent = submitBtn.querySelector('.btn-content');
+            
+            // Validate passwords match
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('Passwords do not match! Please make sure both passwords are the same.');
+                confirmPassword.focus();
+                return;
+            }
+            
+            // Validate terms accepted
+            if (!terms.checked) {
+                e.preventDefault();
+                alert('Please accept the Terms of Service and Privacy Policy to continue.');
+                terms.focus();
+                return;
+            }
+            
+            // Validate password strength
+            if (password.value.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long.');
+                password.focus();
+                return;
+            }
+            
+            // Show loading state
+            btnContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+            submitBtn.disabled = true;
+            
+            // Re-enable after 5 seconds in case of error
+            setTimeout(() => {
+                btnContent.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+                submitBtn.disabled = false;
+            }, 5000);
+        });
+
+        // Add focus effects to inputs
+        document.querySelectorAll('.professional-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+        });
+
+        // Real-time terms validation
+        document.getElementById('terms').addEventListener('change', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            if (this.checked) {
+                submitBtn.classList.remove('btn-disabled');
+            } else {
+                submitBtn.classList.add('btn-disabled');
+            }
+        });
+
+        // Initialize terms validation
+        document.getElementById('terms').dispatchEvent(new Event('change'));
+    </script>
+</body>
+</html>

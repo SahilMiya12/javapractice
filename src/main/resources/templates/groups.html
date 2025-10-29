@@ -10,13 +10,20 @@
     <header class="header">
         <div class="container">
             <nav class="navbar">
-                <div class="logo">💰 ExpenseSplit</div>
+                <div class="logo"> ExpenseSplit</div>
                 <ul class="nav-links">
                     <li><a href="/">Dashboard</a></li>
                     <li><a href="/users">Users</a></li>
                     <li><a href="/groups" class="active">Groups</a></li>
                     <li><a href="/expenses">Expenses</a></li>
                     <li><a href="/balances">Balances</a></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-outline btn-sm" style="color: var(--text-secondary); border: none; background: none;">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -70,19 +77,21 @@
             <!-- Groups List -->
             <div class="card">
                 <h2 class="card-title">All Groups</h2>
-                <table class="table" id="groupsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Created Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="groupsTableBody">
-                        <!-- Groups will be populated by JavaScript -->
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="table" id="groupsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Created Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupsTableBody">
+                            <!-- Groups will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Group Members -->
@@ -94,26 +103,30 @@
                         <option value="">Select Group</option>
                     </select>
                 </div>
-                <table class="table" id="membersTable">
-                    <thead>
-                        <tr>
-                            <th>User ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Joined Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="membersTableBody">
-                        <!-- Members will be populated by JavaScript -->
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="table" id="membersTable">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Contact</th>
+                                <th>Joined Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTableBody">
+                            <!-- Members will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 ExpenseSplit Tracker. All rights reserved.</p>
+            <p>&copy; 2025 ExpenseSplit Tracker. All rights reserved.</p>
         </div>
     </footer>
 
@@ -163,6 +176,13 @@
                     viewGroupSelect.innerHTML = '<option value="">Select Group</option>';
                     tbody.innerHTML = '';
                     
+                    if (groups.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td colspan="4" class="text-center">No groups found. Create a group to get started.</td>`;
+                        tbody.appendChild(row);
+                        return;
+                    }
+                    
                     groups.forEach(group => {
                         // Add to select dropdowns
                         const option = document.createElement('option');
@@ -178,7 +198,7 @@
                             <td>${group.name}</td>
                             <td>${new Date(group.createdAt).toLocaleDateString()}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteGroup(${group.groupId})">Delete</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteGroup(${group.groupId})">Delete Group</button>
                             </td>
                         `;
                         tbody.appendChild(row);
@@ -292,7 +312,7 @@
                     
                     if (members.length === 0) {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td colspan="4" class="text-center">No members in this group yet.</td>`;
+                        row.innerHTML = `<td colspan="6" class="text-center">No members in this group yet.</td>`;
                         tbody.appendChild(row);
                         return;
                     }
@@ -303,7 +323,11 @@
                             <td>${member.userId}</td>
                             <td>${member.name}</td>
                             <td>${member.email}</td>
+                            <td>${member.contactNo || 'N/A'}</td>
                             <td>${member.joinDate ? new Date(member.joinDate).toLocaleDateString() : 'N/A'}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="removeMemberFromGroup(${groupId}, ${member.userId})">Remove</button>
+                            </td>
                         `;
                         tbody.appendChild(row);
                     });
@@ -312,6 +336,26 @@
                     console.error('Error loading group members:', error);
                     showAlert('Error loading group members. Please try again.');
                 });
+        }
+
+        function removeMemberFromGroup(groupId, userId) {
+            if (confirm('Are you sure you want to remove this member from the group?')) {
+                fetch(`/api/groups/${groupId}/members?userId=${userId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showAlert('Member removed successfully!', 'success');
+                        loadGroupMembers(groupId); // Refresh the members list
+                    } else {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing member:', error);
+                    showAlert('Error removing member: ' + error.message);
+                });
+            }
         }
 
         function deleteGroup(groupId) {
@@ -323,6 +367,9 @@
                     if (response.ok) {
                         loadGroups();
                         showAlert('Group deleted successfully!', 'success');
+                    // Clear members table if we were viewing this group
+                        document.getElementById('viewGroupId').value = '';
+                        document.getElementById('membersTableBody').innerHTML = '';
                     } else {
                         throw new Error('Failed to delete group');
                     }

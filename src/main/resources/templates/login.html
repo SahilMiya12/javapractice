@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - ExpenseSplit</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="professional-auth-body">
+    <div class="professional-auth-container">
+        <!-- Left Section - Branding -->
+        <div class="auth-branding-section">
+            <div class="branding-content">
+                <div class="logo-large">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>ExpenseSplit</span>
+                </div>
+                <h1 class="branding-title">Split Expenses<br>Smartly</h1>
+                <p class="branding-subtitle">Manage group expenses, track balances, and settle up effortlessly with your friends, family, or roommates.</p>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-users"></i>
+                        <span>Create Groups</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Track Expenses</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Balance Settlements</span>
+                    </div>
+                </div>
+                
+                <!-- New User Section -->
+                <!-- <div class="new-user-section">
+                    <h3>New to ExpenseSplit?</h3>
+                    <p>Join thousands of users managing their expenses efficiently</p>
+                    <a th:href="@{/register}" class="professional-btn professional-btn-outline">
+                        <i class="fas fa-user-plus"></i>
+                        Create New Account
+                    </a>
+                </div> -->
+            </div>
+        </div>
+
+        <!-- Right Section - Login Form -->
+        <div class="auth-form-section">
+            <div class="form-container">
+                <div class="form-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to your account to continue</p>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${error}" class="professional-alert professional-alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+                <div th:if="${message}" class="professional-alert professional-alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${message}"></span>
+                </div>
+                <div th:if="${success}" class="professional-alert professional-alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${success}"></span>
+                </div>
+
+                <form th:action="@{/login}" method="post" class="professional-auth-form">
+                    <div class="input-group">
+                        <label for="username" class="input-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="username" name="username" class="professional-input" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password" class="input-label">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </label>
+                        <input type="password" id="password" name="password" class="professional-input" placeholder="Enter your password" required>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="professional-btn professional-btn-primary">
+                        <span class="btn-content">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Sign In
+                        </span>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? <a th:href="@{/register}" class="auth-link">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add loading state to button
+        document.querySelector('.professional-auth-form').addEventListener('submit', function(e) {
+            const btn = this.querySelector('.professional-btn');
+            const btnContent = btn.querySelector('.btn-content');
+            
+            btnContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+            btn.disabled = true;
+            
+            // Re-enable after 3 seconds in case of error
+            setTimeout(() => {
+                btnContent.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+                btn.disabled = false;
+            }, 3000);
+        });
+
+        // Add focus effects to inputs
+        document.querySelectorAll('.professional-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

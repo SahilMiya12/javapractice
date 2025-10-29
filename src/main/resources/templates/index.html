@@ -11,13 +11,20 @@
     <header class="header">
         <div class="container">
             <nav class="navbar">
-                <div class="logo">💰 ExpenseSplit</div>
+                <div class="logo"> ExpenseSplit</div>
                 <ul class="nav-links">
                     <li><a href="/" class="active">Dashboard</a></li>
                     <li><a href="/users">Users</a></li>
                     <li><a href="/groups">Groups</a></li>
                     <li><a href="/expenses">Expenses</a></li>
                     <li><a href="/balances">Balances</a></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-outline btn-sm" style="color: var(--text-secondary); border: none; background: none;">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -28,40 +35,45 @@
         <div class="container">
             <h1 class="section-title">Expense Split Dashboard</h1>
             
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+            
             <!-- Quick Stats -->
-            <div class="row">
-                <div class="col-4">
-                    <div class="card text-center">
-                        <h3>Total Users</h3>
-                        <p class="balance-amount" th:text="${totalUsers ?: '0'}">0</p>
-                    </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${totalUsers ?: '0'}">0</div>
+                    <div class="stat-label">Total Users</div>
                 </div>
-                <div class="col-4">
-                    <div class="card text-center">
-                        <h3>Total Groups</h3>
-                        <p class="balance-amount" th:text="${totalGroups ?: '0'}">0</p>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${totalGroups ?: '0'}">0</div>
+                    <div class="stat-label">Total Groups</div>
                 </div>
-                <div class="col-4">
-                    <div class="card text-center">
-                        <h3>Total Expenses</h3>
-                        <p class="balance-amount" th:text="${totalExpenses ?: '0'}">0</p>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${totalExpenses ?: '0'}">0</div>
+                    <div class="stat-label">Total Expenses</div>
                 </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="card">
                 <h2 class="card-title">Quick Actions</h2>
-                <div class="row">
-                    <div class="col-6">
-                        <a href="/users" class="btn btn-primary">Manage Users</a>
-                        <a href="/groups" class="btn btn-primary mt-2">Manage Groups</a>
-                    </div>
-                    <div class="col-6">
-                        <a href="/expenses" class="btn btn-success">Manage Expenses</a>
-                        <a href="/balances" class="btn btn-secondary mt-2">View Balances</a>
-                    </div>
+                <div class="quick-actions">
+                    <a href="/users" class="action-btn">
+                        <div class="action-icon">👥</div>
+                        <span>Manage Users</span>
+                    </a>
+                    <a href="/groups" class="action-btn">
+                        <div class="action-icon">🏠</div>
+                        <span>Manage Groups</span>
+                    </a>
+                    <a href="/expenses" class="action-btn">
+                        <div class="action-icon">💰</div>
+                        <span>Manage Expenses</span>
+                    </a>
+                    <a href="/balances" class="action-btn">
+                        <div class="action-icon">⚖️</div>
+                        <span>View Balances</span>
+                    </a>
                 </div>
             </div>
 
@@ -73,10 +85,13 @@
                         <h3 class="card-title">Quick Add User</h3>
                         <form id="quickUserForm">
                             <div class="form-group">
-                                <input type="text" class="form-control" id="quickUserName" placeholder="Name" required>
+                                <input type="text" class="form-control" id="quickUserName" placeholder="Full Name" required>
                             </div>
                             <div class="form-group">
-                                <input type="email" class="form-control" id="quickUserEmail" placeholder="Email" required>
+                                <input type="email" class="form-control" id="quickUserEmail" placeholder="Email Address" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="tel" class="form-control" id="quickUserContact" placeholder="Contact Number">
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm">Add User</button>
                         </form>
@@ -102,10 +117,24 @@
                         <h3 class="card-title">Quick Add Expense</h3>
                         <form id="quickExpenseForm">
                             <div class="form-group">
-                                <input type="text" class="form-control" id="quickExpenseDesc" placeholder="Description" required>
+                                <label class="form-label">Group</label>
+                                <select class="form-control" id="quickExpenseGroup" required>
+                                    <option value="">Select Group</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <input type="number" class="form-control" id="quickExpenseAmount" placeholder="Amount" step="0.01" min="0.01" required>
+                                <label class="form-label">Paid By</label>
+                                <select class="form-control" id="quickExpensePaidBy" required>
+                                    <option value="">Select User</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <input type="text" class="form-control" id="quickExpenseDesc" placeholder="Expense description" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Amount (₹)</label>
+                                <input type="number" class="form-control" id="quickExpenseAmount" placeholder="Amount in rupees" step="0.01" min="0.01" required>
                             </div>
                             <button type="submit" class="btn btn-success btn-sm">Add Expense</button>
                         </form>
@@ -126,13 +155,15 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 ExpenseSplit Tracker. All rights reserved.</p>
+            <p>&copy; 2025 ExpenseSplit Tracker. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             loadRecentActivity();
+            loadGroupsForQuickExpense();
+            loadUsersForQuickExpense();
             
             // Quick Add User Form
             document.getElementById('quickUserForm').addEventListener('submit', function(e) {
@@ -153,14 +184,84 @@
             });
         });
 
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function loadGroupsForQuickExpense() {
+            fetch('/api/groups')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load groups');
+                    }
+                    return response.json();
+                })
+                .then(groups => {
+                    const groupSelect = document.getElementById('quickExpenseGroup');
+                    groupSelect.innerHTML = '<option value="">Select Group</option>';
+                    
+                    groups.forEach(group => {
+                        const option = document.createElement('option');
+                        option.value = group.groupId;
+                        option.textContent = group.name;
+                        groupSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading groups for quick expense:', error);
+                    showAlert('Error loading groups. Please try again.');
+                });
+        }
+
+        function loadUsersForQuickExpense() {
+            fetch('/api/users')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load users');
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    const userSelect = document.getElementById('quickExpensePaidBy');
+                    userSelect.innerHTML = '<option value="">Select User</option>';
+                    
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.userId;
+                        option.textContent = `${user.name} (${user.email})`;
+                        userSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading users for quick expense:', error);
+                    showAlert('Error loading users. Please try again.');
+                });
+        }
+
         function quickAddUser() {
             const name = document.getElementById('quickUserName').value;
             const email = document.getElementById('quickUserEmail').value;
+            const contactNo = document.getElementById('quickUserContact').value;
             
+            if (!name || !email) {
+                showAlert('Please fill all required fields.');
+                return;
+            }
+
             const userData = {
                 name: name,
                 email: email,
-                contactNo: ''
+                contactNo: contactNo,
+                password: "default123" // Default password for quick add
             };
 
             fetch('/api/users', {
@@ -172,24 +273,30 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to add user');
+                    return response.text().then(text => { throw new Error(text) });
                 }
                 return response.json();
             })
             .then(() => {
                 document.getElementById('quickUserForm').reset();
-                alert('User added successfully!');
-                location.reload(); // Reload to update stats
+                showAlert('User added successfully!', 'success');
+                loadUsersForQuickExpense(); // Refresh user dropdown
+                setTimeout(() => location.reload(), 1000); // Reload to update stats
             })
             .catch(error => {
                 console.error('Error adding user:', error);
-                alert('Error adding user. Please try again.');
+                showAlert('Error adding user: ' + error.message);
             });
         }
 
         function quickCreateGroup() {
             const name = document.getElementById('quickGroupName').value;
             
+            if (!name) {
+                showAlert('Please enter a group name.');
+                return;
+            }
+
             const groupData = {
                 name: name
             };
@@ -203,96 +310,156 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to create group');
+                    return response.text().then(text => { throw new Error(text) });
                 }
                 return response.json();
             })
             .then(() => {
                 document.getElementById('quickGroupForm').reset();
-                alert('Group created successfully!');
-                location.reload(); // Reload to update stats
+                showAlert('Group created successfully!', 'success');
+                loadGroupsForQuickExpense(); // Refresh group dropdown
+                setTimeout(() => location.reload(), 1000); // Reload to update stats
             })
             .catch(error => {
                 console.error('Error creating group:', error);
-                alert('Error creating group. Please try again.');
+                showAlert('Error creating group: ' + error.message);
             });
         }
 
         function quickAddExpense() {
+            const groupId = document.getElementById('quickExpenseGroup').value;
+            const paidBy = document.getElementById('quickExpensePaidBy').value;
             const description = document.getElementById('quickExpenseDesc').value;
             const amount = document.getElementById('quickExpenseAmount').value;
             
-            // For quick expense, we'll use first available group and user
-            Promise.all([
-                fetch('/api/groups').then(r => r.json()),
-                fetch('/api/users').then(r => r.json())
-            ])
-            .then(([groups, users]) => {
-                if (groups.length === 0 || users.length === 0) {
-                    alert('Please create at least one group and user first.');
-                    return;
-                }
-                
-                const expenseData = {
-                    groupId: groups[0].groupId,
-                    paidBy: users[0].userId,
-                    amount: parseFloat(amount),
-                    description: description
-                };
+            // Validate all fields
+            if (!groupId || !paidBy || !description || !amount) {
+                showAlert('Please fill all required fields.');
+                return;
+            }
 
-                return fetch('/api/expenses', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(expenseData)
-                });
+            if (parseFloat(amount) <= 0) {
+                showAlert('Amount must be greater than 0.');
+                return;
+            }
+
+            const expenseData = {
+                groupId: parseInt(groupId),
+                paidBy: parseInt(paidBy),
+                amount: parseFloat(amount),
+                description: description
+            };
+
+            console.log('Sending expense data:', expenseData);
+
+            fetch('/api/expenses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(expenseData)
             })
             .then(response => {
-                if (!response || !response.ok) {
-                    throw new Error('Failed to add expense');
+                if (!response.ok) {
+                    return response.text().then(text => { 
+                        throw new Error(text || 'Failed to create expense');
+                    });
                 }
                 return response.json();
             })
-            .then(() => {
+            .then(data => {
+                console.log('Expense created successfully:', data);
                 document.getElementById('quickExpenseForm').reset();
-                alert('Expense added successfully!');
-                location.reload(); // Reload to update stats
+                showAlert('Expense added successfully!', 'success');
+                loadRecentActivity(); // Refresh recent activity
+                setTimeout(() => location.reload(), 1000); // Reload to update stats
             })
             .catch(error => {
-                console.error('Error adding expense:', error);
-                alert('Error adding expense. Please try again.');
+                console.error('Error creating expense:', error);
+                let errorMessage = 'Error creating expense. Please try again.';
+                
+                // Parse error message for better user feedback
+                if (error.message.includes('Group not found')) {
+                    errorMessage = 'Selected group not found.';
+                } else if (error.message.includes('User not found')) {
+                    errorMessage = 'Selected payer not found.';
+                } else if (error.message.includes('not a member')) {
+                    errorMessage = 'Selected payer is not a member of this group.';
+                } else if (error.message.includes('Failed to create expense')) {
+                    errorMessage = 'Failed to create expense. Please check if the user is a member of the group.';
+                }
+                
+                showAlert(errorMessage);
             });
         }
 
         function loadRecentActivity() {
             Promise.all([
-                fetch('/api/groups').then(r => r.json()),
-                fetch('/api/expenses/group/1').then(r => r.json()).catch(() => [])
+                fetch('/api/groups').then(r => r.json()).catch(() => []),
+                fetch('/api/expenses').then(r => r.json()).catch(() => [])
             ])
             .then(([groups, expenses]) => {
                 const activityDiv = document.getElementById('recentActivity');
                 let html = '';
                 
                 if (expenses && expenses.length > 0) {
-                    html += '<h4>Recent Expenses</h4><ul>';
-                    expenses.slice(0, 5).forEach(expense => {
-                        html += `<li>${expense.description} - $${expense.amount}</li>`;
+                    html += '<h4>Recent Expenses</h4><div class="recent-expenses">';
+                    // Get group names for display
+                    const groupMap = {};
+                    groups.forEach(group => {
+                        groupMap[group.groupId] = group.name;
                     });
-                    html += '</ul>';
+                    
+                    // Get user names for display
+                    const userMap = {};
+                    fetch('/api/users')
+                        .then(r => r.json())
+                        .then(users => {
+                            users.forEach(user => {
+                                userMap[user.userId] = user.name;
+                            });
+                            
+                            expenses.slice(0, 5).forEach(expense => {
+                                const groupName = groupMap[expense.groupId] || 'Unknown Group';
+                                const paidByName = userMap[expense.paidBy] || 'Unknown User';
+                                html += `
+                                    <div class="recent-item">
+                                        <strong>${expense.description}</strong> - ₹${expense.amount.toFixed(2)}
+                                        <br><small>Paid by: ${paidByName} • Group: ${groupName} • ${expense.expenseDate ? new Date(expense.expenseDate).toLocaleDateString() : 'N/A'}</small>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += '</div>';
+                            
+                            if (groups && groups.length > 0) {
+                                html += '<h4>Your Groups</h4><div class="group-list">';
+                                groups.slice(0, 3).forEach(group => {
+                                    html += `<div class="group-item">${group.name}</div>`;
+                                });
+                                html += '</div>';
+                            }
+                            
+                            activityDiv.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error loading users for activity:', error);
+                            activityDiv.innerHTML = '<p>Error loading recent activity.</p>';
+                        });
+                    
                 } else {
-                    html += '<p>No recent expenses found.</p>';
+                    html += '<p>No recent expenses found. Add an expense to get started!</p>';
+                    
+                    if (groups && groups.length > 0) {
+                        html += '<h4>Your Groups</h4><div class="group-list">';
+                        groups.slice(0, 3).forEach(group => {
+                            html += `<div class="group-item">${group.name}</div>`;
+                        });
+                        html += '</div>';
+                    }
+                    
+                    activityDiv.innerHTML = html;
                 }
-                
-                if (groups && groups.length > 0) {
-                    html += '<h4>Your Groups</h4><ul>';
-                    groups.slice(0, 3).forEach(group => {
-                        html += `<li>${group.name}</li>`;
-                    });
-                    html += '</ul>';
-                }
-                
-                activityDiv.innerHTML = html;
             })
             .catch(error => {
                 console.error('Error loading activity:', error);
@@ -300,5 +467,55 @@
             });
         }
     </script>
+
+    <style>
+        .recent-expenses {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .recent-item {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .recent-item strong {
+            color: var(--text-primary);
+        }
+        
+        .recent-item small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .group-item {
+            padding: 0.5rem 0.75rem;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: var(--radius);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+            
+            .col-4 {
+                flex: 0 0 100%;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
 </body>
 </html>

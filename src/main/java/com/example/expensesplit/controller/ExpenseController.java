@@ -18,36 +18,75 @@ public class ExpenseController {
     private ExpenseService expenseService;
     
     @PostMapping
-    public ResponseEntity<ExpenseDTO> createExpense(@Valid @RequestBody ExpenseDTO expenseDTO) {
-        ExpenseDTO createdExpense = expenseService.createExpense(expenseDTO);
-        return ResponseEntity.ok(createdExpense);
+    public ResponseEntity<?> createExpense(@Valid @RequestBody ExpenseDTO expenseDTO) {
+        try {
+            ExpenseDTO createdExpense = expenseService.createExpense(expenseDTO);
+            return ResponseEntity.ok(createdExpense);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping
+    public ResponseEntity<?> getAllExpenses() {
+        try {
+            List<ExpenseDTO> expenses = expenseService.getAllExpenses();
+            return ResponseEntity.ok(expenses);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error loading expenses: " + e.getMessage());
+        }
     }
     
     @GetMapping("/group/{id}")
-    public ResponseEntity<List<ExpenseDTO>> getExpensesByGroup(@PathVariable("id") Long groupId) {
-        List<ExpenseDTO> expenses = expenseService.getExpensesByGroup(groupId);
-        return ResponseEntity.ok(expenses);
+    public ResponseEntity<?> getExpensesByGroup(@PathVariable("id") Long groupId) {
+        try {
+            List<ExpenseDTO> expenses = expenseService.getExpensesByGroup(groupId);
+            return ResponseEntity.ok(expenses);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error loading group expenses: " + e.getMessage());
+        }
     }
     
     @PostMapping("/{id}/participants")
-    public ResponseEntity<Void> addParticipantsToExpense(
+    public ResponseEntity<?> addParticipantsToExpense(
             @PathVariable("id") Long expenseId,
             @RequestBody List<ExpenseParticipantDTO> participants) {
-        expenseService.addParticipantsToExpense(expenseId, participants);
-        return ResponseEntity.ok().build();
+        try {
+            expenseService.addParticipantsToExpense(expenseId, participants);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error adding participants: " + e.getMessage());
+        }
     }
     
     @GetMapping("/{id}/participants")
-    public ResponseEntity<List<ExpenseParticipantDTO>> getExpenseParticipants(
+    public ResponseEntity<?> getExpenseParticipants(
             @PathVariable("id") Long expenseId) {
-        List<ExpenseParticipantDTO> participants = expenseService.getExpenseParticipants(expenseId);
-        return ResponseEntity.ok(participants);
+        try {
+            List<ExpenseParticipantDTO> participants = expenseService.getExpenseParticipants(expenseId);
+            return ResponseEntity.ok(participants);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error loading participants: " + e.getMessage());
+        }
     }
     
-    // ADD THIS DELETE ENDPOINT
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable("id") Long expenseId) {
-        expenseService.deleteExpense(expenseId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteExpense(@PathVariable("id") Long expenseId) {
+        try {
+            expenseService.deleteExpense(expenseId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error deleting expense: " + e.getMessage());
+        }
     }
 }

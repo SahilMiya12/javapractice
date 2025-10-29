@@ -10,6 +10,7 @@ import com.example.expensesplit.repository.GroupRepository;
 import com.example.expensesplit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +69,18 @@ public class GroupService {
         groupMember.setUser(user);
         
         groupMemberRepository.save(groupMember);
+    }
+    
+    @Transactional
+    public void removeMemberFromGroup(Long groupId, Long userId) {
+        GroupMember groupMember = groupMemberRepository.findByGroupGroupIdAndUserUserId(groupId, userId)
+                .orElseThrow(() -> new RuntimeException("User is not a member of this group"));
+        
+        // Check if user has any expenses in this group
+        // You might want to handle this differently based on your business logic
+        // For now, we'll just remove the member
+        
+        groupMemberRepository.delete(groupMember);
     }
     
     public List<UserDTO> getGroupMembers(Long groupId) {

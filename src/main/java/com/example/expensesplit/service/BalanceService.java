@@ -48,14 +48,14 @@ public class BalanceService {
         for (Expense expense : expenses) {
             Long paidByUserId = expense.getPaidBy().getUserId();
             BigDecimal currentPaid = paidAmounts.getOrDefault(paidByUserId, BigDecimal.ZERO);
-            paidAmounts.put(paidByUserId, currentPaid.add(expense.getAmount()));
+            paidAmounts.put(paidByUserId, currentPaid.add(BigDecimal.valueOf(expense.getAmount())));
         }
         
         // Calculate owed amounts
         for (Long userId : userMap.keySet()) {
             List<ExpenseParticipant> participants = expenseParticipantRepository.findByUserUserIdAndExpenseGroupGroupId(userId, groupId);
             BigDecimal totalOwed = participants.stream()
-                    .map(ExpenseParticipant::getShareAmount)
+                    .map(participant -> BigDecimal.valueOf(participant.getShareAmount()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             owedAmounts.put(userId, totalOwed);
         }

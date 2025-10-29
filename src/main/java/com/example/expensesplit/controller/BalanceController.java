@@ -17,7 +17,11 @@ public class BalanceController {
     
     @GetMapping("/group/{id}")
     public ResponseEntity<List<BalanceDTO>> getGroupBalances(@PathVariable("id") Long groupId) {
-        List<BalanceDTO> balances = balanceService.getGroupBalances(groupId);
-        return ResponseEntity.ok(balances);
+        try {
+            List<BalanceDTO> balances = balanceService.getGroupBalances(groupId);
+            return ResponseEntity.ok(balances);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

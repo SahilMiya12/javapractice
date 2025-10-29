@@ -15,6 +15,10 @@ public class UserDTO {
     private String email;
     
     private String contactNo;
+    
+    @NotBlank(message = "Password is required")
+    private String password;
+    
     private LocalDateTime joinDate;
 
     // Getters and Setters
@@ -29,6 +33,9 @@ public class UserDTO {
     
     public String getContactNo() { return contactNo; }
     public void setContactNo(String contactNo) { this.contactNo = contactNo; }
+    
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
     
     public LocalDateTime getJoinDate() { return joinDate; }
     public void setJoinDate(LocalDateTime joinDate) { this.joinDate = joinDate; }

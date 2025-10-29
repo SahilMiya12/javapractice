@@ -3,7 +3,6 @@ package com.example.expensesplit.dto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +17,7 @@ public class ExpenseDTO {
     
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
-    private BigDecimal amount;
+    private Double amount;
     
     @NotBlank(message = "Description is required")
     private String description;
@@ -36,8 +35,8 @@ public class ExpenseDTO {
     public Long getPaidBy() { return paidBy; }
     public void setPaidBy(Long paidBy) { this.paidBy = paidBy; }
     
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public Double getAmount() { return amount; }
+    public void setAmount(Double amount) { this.amount = amount; }
     
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

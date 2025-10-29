@@ -10,13 +10,20 @@
     <header class="header">
         <div class="container">
             <nav class="navbar">
-                <div class="logo">💰 ExpenseSplit</div>
+                <div class="logo"> ExpenseSplit</div>
                 <ul class="nav-links">
                     <li><a href="/">Dashboard</a></li>
                     <li><a href="/users">Users</a></li>
                     <li><a href="/groups">Groups</a></li>
                     <li><a href="/expenses">Expenses</a></li>
                     <li><a href="/balances" class="active">Balances</a></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-outline btn-sm" style="color: var(--text-secondary); border: none; background: none;">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -25,6 +32,9 @@
     <main class="main-content">
         <div class="container">
             <h1 class="section-title">Group Balances</h1>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
 
             <!-- Group Selection -->
             <div class="card">
@@ -41,7 +51,15 @@
             <div class="card">
                 <h2 class="card-title">Balance Summary</h2>
                 <div id="balancesContainer">
-                    <p>Please select a group to view balances.</p>
+                    <p class="text-center">Please select a group to view balances.</p>
+                </div>
+            </div>
+
+            <!-- Settlement Suggestions -->
+            <div class="card" id="settlementSection" style="display: none;">
+                <h2 class="card-title">Settlement Suggestions</h2>
+                <div id="settlementContainer">
+                    <!-- Settlement suggestions will be populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -49,7 +67,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 ExpenseSplit Tracker. All rights reserved.</p>
+            <p>&copy; 2025 ExpenseSplit Tracker. All rights reserved.</p>
         </div>
     </footer>
 
@@ -61,6 +79,19 @@
                 loadGroupBalances(this.value);
             });
         });
+
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
 
         function loadGroupsForBalances() {
             fetch('/api/groups')
@@ -76,12 +107,16 @@
                         groupSelect.appendChild(option);
                     });
                 })
-                .catch(error => console.error('Error loading groups:', error));
+                .catch(error => {
+                    console.error('Error loading groups:', error);
+                    showAlert('Error loading groups. Please try again.');
+                });
         }
 
         function loadGroupBalances(groupId) {
             if (!groupId) {
-                document.getElementById('balancesContainer').innerHTML = '<p>Please select a group to view balances.</p>';
+                document.getElementById('balancesContainer').innerHTML = '<p class="text-center">Please select a group to view balances.</p>';
+                document.getElementById('settlementSection').style.display = 'none';
                 return;
             }
 
@@ -89,13 +124,17 @@
                 .then(response => response.json())
                 .then(balances => {
                     const container = document.getElementById('balancesContainer');
+                    const settlementSection = document.getElementById('settlementSection');
                     
                     if (balances.length === 0) {
-                        container.innerHTML = '<p>No balances found for this group.</p>';
+                        container.innerHTML = '<p class="text-center">No balances found for this group.</p>';
+                        settlementSection.style.display = 'none';
                         return;
                     }
                     
                     let html = '<div class="row">';
+                    let debtors = [];
+                    let creditors = [];
                     
                     balances.forEach(balance => {
                         const balanceClass = balance.balance > 0 ? 'balance-positive' : 
@@ -105,20 +144,69 @@
                             <div class="col-4">
                                 <div class="balance-card ${balanceClass}">
                                     <h3>${balance.userName}</h3>
-                                    <div class="balance-amount">$${balance.balance.toFixed(2)}</div>
-                                    <p>${balance.balance > 0 ? 'Owes you' : balance.balance < 0 ? 'You owe' : 'Settled up'}</p>
+                                    <div class="balance-amount">₹${Math.abs(balance.balance).toFixed(2)}</div>
+                                    <p>${balance.balance > 0 ? 'Should receive' : balance.balance < 0 ? 'Should pay' : 'Settled up'}</p>
                                 </div>
                             </div>
                         `;
+
+                        // Categorize for settlement suggestions
+                        if (balance.balance > 0) {
+                            creditors.push({ name: balance.userName, amount: balance.balance });
+                        } else if (balance.balance < 0) {
+                            debtors.push({ name: balance.userName, amount: Math.abs(balance.balance) });
+                        }
                     });
                     
                     html += '</div>';
                     container.innerHTML = html;
+
+                    // Generate settlement suggestions
+                    generateSettlementSuggestions(debtors, creditors);
+                    settlementSection.style.display = 'block';
                 })
                 .catch(error => {
                     console.error('Error loading balances:', error);
-                    document.getElementById('balancesContainer').innerHTML = '<p>Error loading balances. Please try again.</p>';
+                    showAlert('Error loading balances. Please try again.');
+                    document.getElementById('settlementSection').style.display = 'none';
                 });
+        }
+
+        function generateSettlementSuggestions(debtors, creditors) {
+            const container = document.getElementById('settlementContainer');
+            
+            if (debtors.length === 0 && creditors.length === 0) {
+                container.innerHTML = '<p class="text-center">All balances are settled! 🎉</p>';
+                return;
+            }
+
+            let html = '<div class="settlement-list">';
+            let i = 0, j = 0;
+
+            while (i < debtors.length && j < creditors.length) {
+                const debtor = debtors[i];
+                const creditor = creditors[j];
+                const amount = Math.min(debtor.amount, creditor.amount);
+
+                html += `
+                    <div class="settlement-item">
+                        <span class="debtor">${debtor.name}</span> 
+                        <span class="action">should pay</span>
+                        <span class="amount">₹${amount.toFixed(2)}</span>
+                        <span class="action">to</span>
+                        <span class="creditor">${creditor.name}</span>
+                    </div>
+                `;
+
+                debtor.amount -= amount;
+                creditor.amount -= amount;
+
+                if (debtor.amount === 0) i++;
+                if (creditor.amount === 0) j++;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
         }
     </script>
 </body>

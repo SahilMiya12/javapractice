@@ -1,16 +1,13 @@
 package com.example.expensesplit.dto;
 
-import java.math.BigDecimal;
-
 public class ExpenseParticipantDTO {
     private Long userId;
-    private BigDecimal shareAmount;
+    private Double shareAmount;
 
     // Getters and Setters
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
     
-    public BigDecimal getShareAmount() { return shareAmount; }
-    public void setShareAmount(BigDecimal shareAmount) { this.shareAmount = shareAmount; }
+    public Double getShareAmount() { return shareAmount; }
+    public void setShareAmount(Double shareAmount) { this.shareAmount = shareAmount; }
 }
-

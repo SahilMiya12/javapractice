@@ -18,20 +18,31 @@ public class UserController {
     
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
-        UserDTO createdUser = userService.createUser(userDTO);
-        return ResponseEntity.ok(createdUser);
+        try {
+            UserDTO createdUser = userService.createUser(userDTO);
+            return ResponseEntity.ok(createdUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
     
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+        try {
+            List<UserDTO> users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
     
-    // ADD THIS DELETE ENDPOINT
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") Long userId) {
-        userService.deleteUser(userId);
-        return ResponseEntity.ok().build();
+        try {
+            userService.deleteUser(userId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

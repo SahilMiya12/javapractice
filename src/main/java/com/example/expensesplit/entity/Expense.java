@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +27,8 @@ public class Expense {
     
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    @Column(nullable = false)
+    private Double amount;
     
     @NotBlank(message = "Description is required")
     @Column(nullable = false, length = 200)
@@ -52,8 +51,8 @@ public class Expense {
     public User getPaidBy() { return paidBy; }
     public void setPaidBy(User paidBy) { this.paidBy = paidBy; }
     
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public Double getAmount() { return amount; }
+    public void setAmount(Double amount) { this.amount = amount; }
     
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

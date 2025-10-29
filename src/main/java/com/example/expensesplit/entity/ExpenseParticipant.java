@@ -1,7 +1,6 @@
 package com.example.expensesplit.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "expense_participants")
@@ -18,8 +17,8 @@ public class ExpenseParticipant {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal shareAmount;
+    @Column(nullable = false)
+    private Double shareAmount;
 
     // Getters and Setters
     public Long getParticipantId() { return participantId; }
@@ -31,6 +30,6 @@ public class ExpenseParticipant {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
     
-    public BigDecimal getShareAmount() { return shareAmount; }
-    public void setShareAmount(BigDecimal shareAmount) { this.shareAmount = shareAmount; }
+    public Double getShareAmount() { return shareAmount; }
+    public void setShareAmount(Double shareAmount) { this.shareAmount = shareAmount; }
 }
